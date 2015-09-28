@@ -60,6 +60,7 @@ public class Servidor implements Runnable {
         PrintWriter out = null;
         BufferedOutputStream dOut = null;
         String fileRequested = null;
+        String input2;
         try {
             in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
             out = new PrintWriter(connect.getOutputStream()); /* Enviar cabecalhos ao cliente */
@@ -69,66 +70,76 @@ public class Servidor implements Runnable {
             String input = in.readLine(); /* GET / HTTP/1.1 */
 
             System.out.println("Cabeçalho: " + input);
+            System.out.println(" ");
 
             StringTokenizer parse = new StringTokenizer(input);
             String method = parse.nextToken().toUpperCase(); /* GET */
 
-            System.out.println("Metodo: " + method);
-
-            fileRequested = parse.nextToken().toLowerCase(); /* / */
-
-            if (fileRequested.endsWith("/")) {
-                fileRequested += arq_pagina;  // fileReq: concatena / com a index.html.. Resultado: /index.html
-            }
-            File file = new File(raiz, fileRequested);
-            int fileLength = (int) file.length();
-
-            String content = getContentType(fileRequested);
-
-            if (method.equals("GET")) {
-                FileInputStream fileIn = null;
-                byte[] fileData = new byte[fileLength];
-
-                try {
-                    fileIn = new FileInputStream(file);
-                    fileIn.read(fileData);
-                } finally {
-                    close(fileIn);
-                }
-                /* Cabecalho */
-                out.println("HTTP/1.0 200 OK");
-                out.println("Date: " + new Date());
-                out.println("Content-type: " + content);
-                out.println("Content-length: " + file.length());
-                out.println();
-                out.flush();
-
-                dOut.write(fileData, 0, fileLength);
-                dOut.flush();
-            }
             if (method.equals("POST")) {
-                FileInputStream fileIn = null;
-                byte[] fileData = new byte[fileLength];
+//                FileInputStream fileIn = null;
+//                byte[] fileData = new byte[fileLength];
 
-                try {
-                    fileIn = new FileInputStream(file);
-                    fileIn.read(fileData);
-                } finally {
-                    close(fileIn);
-                }
-                String input2 = in.readLine();
-                System.out.println("  "+input2);
+//                try {
+//                    fileIn = new FileInputStream(file);
+//                    fileIn.read(fileData);
+//                } finally {
+//                    close(fileIn);
+//                }
+                //Pega o body do POST ******************************************    
+                input2 = in.readLine();
+                System.out.println(input2);
+                input2 = in.readLine();
+                System.out.println(input2);
+                input2 = in.readLine();
+                System.out.println(input2);
+                input2 = in.readLine();
+                System.out.println("Query POST: " + input2);
+                
+                System.out.println(" ");
+                
                 /* Cabecalho */
                 out.println("HTTP/1.0 200 OK");
                 out.println("Date: " + new Date());
-                out.println("Content-type: " + content);
-                out.println("Content-length: " + file.length());
+//                out.println("Content-type: " + content);
+//                out.println("Content-length: " + file.length());
                 out.println();
                 out.flush();
 
-                dOut.write(fileData, 0, fileLength);
+//                dOut.write(fileData, 0, fileLength);
                 dOut.flush();
             }
+//
+//            fileRequested = parse.nextToken().toLowerCase(); /* / */
+//
+//            if (fileRequested.endsWith("/")) {
+//                fileRequested += arq_pagina;  // fileReq: concatena / com a index.html.. Resultado: /index.html
+//            }
+//            File file = new File(raiz, fileRequested);
+//            int fileLength = (int) file.length();
+//
+//            String content = getContentType(fileRequested);
+//
+//            if (method.equals("GET")) {
+//                FileInputStream fileIn = null;
+//                byte[] fileData = new byte[fileLength];
+//
+//                try {
+//                    fileIn = new FileInputStream(file);
+//                    fileIn.read(fileData);
+//                } finally {
+//                    close(fileIn);
+//                }
+//                /* Cabecalho */
+//                out.println("HTTP/1.0 200 OK");
+//                out.println("Date: " + new Date());
+//                out.println("Content-type: " + content);
+//                out.println("Content-length: " + file.length());
+//                out.println();
+//                out.flush();
+//
+//                dOut.write(fileData, 0, fileLength);
+//                dOut.flush();
+//            }
 
         } catch (FileNotFoundException fnfe) {
             fileNotFound(out, fileRequested);

@@ -18,17 +18,22 @@ public class Cliente {
     public static void main(String[] args) throws IOException {
 
         Socket server;
-
+        String queryPost = "name=vitor"+"&"+"lastname=goncalves";
+        
+        
         if (args[0].equals("localhost") || args[0].equals("127.0.0.1")) {
             server = new Socket(InetAddress.getLocalHost(), Integer.parseInt(args[1]));
         } else {
             server = new Socket(InetAddress.getByName(args[0]), Integer.parseInt(args[1]));
         }
 
+        //Metodo POST **********************************************************
         PrintWriter pw = new PrintWriter(server.getOutputStream());
         pw.println("POST / HTTP/1.1");
         pw.println("Host: " + args[0]);
-        pw.println("name=vitor"+"&"+"lastname=goncalves");
+        pw.println("Content-Length: "+queryPost.length());
+        pw.println("Content-type: text/plain");
+        pw.println(queryPost);
         pw.println("");
         pw.flush();
         BufferedReader br = new BufferedReader(new InputStreamReader(server.getInputStream()));
@@ -37,7 +42,8 @@ public class Cliente {
             System.out.println(t);
         }
         br.close();
-
+        
+        //Metodo GET ***********************************************************
 //        PrintWriter pw = new PrintWriter(server.getOutputStream());
 //        pw.println("GET / HTTP/1.1");
 //        pw.println("Host: " + args[0]);
