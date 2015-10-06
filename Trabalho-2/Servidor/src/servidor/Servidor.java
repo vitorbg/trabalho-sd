@@ -5,6 +5,7 @@ import grafo.Grafo;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import persistencia.GrafoPersist;
-import static persistencia.GrafoPersist.grafo;
 
 /*  Passe tres argumentos: pastaraiz + porta + nome do arquivo da pagina contido na pasta raiz
  *   Exemplos:
@@ -246,72 +244,225 @@ public class Servidor implements Runnable {
                         ok200(out);
                     }
                 }
+            }
+//
+            if (method.equals("DELETE")) {
+                if (caminho.contains("/grafo/")) {
+                    boolean grafoExiste = false;
+                    int i = 0;
+                    int indiceGrafo = 0;
 
-//
-//            fileRequested = parse.nextToken().toLowerCase(); /* / */
-//
-//            if (fileRequested.endsWith("/")) {
-//                fileRequested += arq_pagina;  // fileReq: concatena / com a index.html.. Resultado: /index.html
-//            }
-//            File file = new File(raiz, fileRequested);
-//            int fileLength = (int) file.length();
-//
-//            String content = getContentType(fileRequested);
-//
-                if (method.equals("DELETE")) {
-//                FileInputStream fileIn = null;
-//                byte[] fileData = new byte[fileLength];
-//
-//                try {
-//                    fileIn = new FileInputStream(file);
-//                    fileIn.read(fileData);
-//                } finally {
-//                    close(fileIn);
-//                }
-//                /* Cabecalho */
-//                out.println("HTTP/1.0 200 OK");
-//                out.println("Date: " + new Date());
-//                out.println("Content-type: " + content);
-//                out.println("Content-length: " + file.length());
-//                out.println();
-//                out.flush();
-//
-//                dOut.write(fileData, 0, fileLength);
-//                dOut.flush();
+                    String nomeGrafo = caminho.substring(7, caminho.length());
+                    System.out.println("nome grafo: " + nomeGrafo);
+
+                    //Verifica se o grafo já existe
+                    for (i = 0; i < GrafoPersist.grafo.size(); i++) {
+                        //existe o grafo
+                        if (GrafoPersist.grafo.get(i).getNome().equals(nomeGrafo)) {
+                            indiceGrafo = i;
+                            grafoExiste = true;
+
+                        }
+                    }
+                    if (grafoExiste) {
+                        GrafoPersist.grafo.remove(indiceGrafo);
+                        ok200(out);
+                    } else {
+                        badRequest(out);
+                    }
+                }
+
+                if (caminho.contains("/vertice/")) {
+                    boolean verticeExiste = false;
+                    int i = 0;
+                    int j = 0;
+                    int indiceGrafo = 0;
+
+                    String parte = caminho.substring(9, caminho.length());
+                    while (parte.charAt(i) != '/') {
+                        i++;
+                        j++;
+                    }
+                    String nomeGrafo = parte.substring(0, j);
+
+                    j++;
+                    String nomeVertice = parte.substring(j, parte.length());
+                    System.out.println("parte: " + parte);
+                    System.out.println("nome grafo: " + nomeGrafo);
+                    System.out.println("nome vertice: " + nomeVertice);
+                    //Verifica se o grafo já existe
+                    for (i = 0; i < GrafoPersist.grafo.size(); i++) {
+                        //existe o grafo
+                        if (GrafoPersist.grafo.get(i).getNome().equals(nomeGrafo)) {
+                            indiceGrafo = i;
+                            //verifica se o vertice existe
+                            for (j = 0; j < GrafoPersist.grafo.get(i).vertice.size(); j++) {
+                                if (GrafoPersist.grafo.get(i).vertice.get(j).equals(nomeVertice)) {
+                                    verticeExiste = true;
+                                }
+                            }
+
+                        }
+                    }
+                    if (verticeExiste) {
+                        GrafoPersist.grafo.get(indiceGrafo).vertice.remove(nomeVertice);
+                        ok200(out);
+                    } else {
+                        badRequest(out);
+
+                    }
+
+                }
+                if (caminho.contains("/aresta/")) {
+                    boolean arestaExiste = false;
+                    int i = 0;
+                    int j = 0;
+                    int indiceGrafo = 0;
+                    int indiceFixo;
+                    int indiceAresta = 0;
+
+                    String parte = caminho.substring(8, caminho.length());
+                    System.out.println("parte: " + parte);
+
+                    while (parte.charAt(i) != '/') {
+                        j++;
+                        i++;
+                    }
+
+                    String nomeGrafo = parte.substring(0, j);
+                    System.out.println("nome grafo: " + nomeGrafo);
+                    indiceFixo = j + 1;
+
+                    while (parte.charAt(i) != '-') {
+                        i++;
+                        j++;
+                    }
+
+                    String nomeVertice1 = parte.substring(indiceFixo, j);
+                    System.out.println("Vertice1: " + nomeVertice1);
+                    indiceFixo = j + 1;
+
+                    String nomeVertice2 = parte.substring(indiceFixo, parte.length());
+                    System.out.println("Vertice2: " + nomeVertice2);
+
+                    //Verifica se o grafo já existe
+                    for (i = 0; i < GrafoPersist.grafo.size(); i++) {
+                        //existe o grafo
+                        if (GrafoPersist.grafo.get(i).getNome().equals(nomeGrafo)) {
+                            indiceGrafo = i;
+                            //verifica se o vertice existe
+                            for (j = 0; j < GrafoPersist.grafo.get(i).aresta.size(); j++) {
+                                if (GrafoPersist.grafo.get(i).aresta.get(j).getVertice1().equals(nomeVertice1)
+                                        && GrafoPersist.grafo.get(i).aresta.get(j).getVertice2().equals(nomeVertice2)
+                                        || GrafoPersist.grafo.get(i).aresta.get(j).getVertice1().equals(nomeVertice2)
+                                        && GrafoPersist.grafo.get(i).aresta.get(j).getVertice2().equals(nomeVertice1)) {
+                                    arestaExiste = true;
+                                    indiceAresta = j;
+                                }
+                            }
+
+                        }
+                    }
+                    if (arestaExiste) {
+                        GrafoPersist.grafo.get(indiceGrafo).aresta.remove(indiceAresta);
+                        ok200(out);
+                    } else {
+
+                        badRequest(out);
+
+                    }
                 }
             }
 
             if (method.equals("PUT")) {
-//                FileInputStream fileIn = null;
-//                byte[] fileData = new byte[fileLength];
-//
-//                try {
-//                    fileIn = new FileInputStream(file);
-//                    fileIn.read(fileData);
-//                } finally {
-//                    close(fileIn);
-//                }
-//                /* Cabecalho */
-//                out.println("HTTP/1.0 200 OK");
-//                out.println("Date: " + new Date());
-//                out.println("Content-type: " + content);
-//                out.println("Content-length: " + file.length());
-//                out.println();
-//                out.flush();
-//
-//                dOut.write(fileData, 0, fileLength);
-//                dOut.flush();
+                if (caminho.contains("/grafo/")) {
+                    boolean arestaExiste = false;
+                    int i = 0;
+                    int j = 0;
+                    int indiceGrafo = 0;
+                    int indiceAresta = 0;
+                    int indiceFixo;
+
+                    String parte = caminho.substring(7, caminho.length());
+                    System.out.println("parte: " + parte);
+
+                    while (parte.charAt(i) != '/') {
+                        j++;
+                        i++;
+                    }
+
+                    String nomeGrafo = parte.substring(0, j);
+                    System.out.println("nome grafo: " + nomeGrafo);
+                    indiceFixo = j + 1;
+
+                    while (parte.charAt(i) != '-') {
+                        i++;
+                        j++;
+                    }
+
+                    String nomeVertice1 = parte.substring(indiceFixo, j);
+                    System.out.println("Vertice1: " + nomeVertice1);
+                    indiceFixo = j + 1;
+
+                    while (parte.charAt(i) != '&') {
+                        i++;
+                        j++;
+                    }
+
+                    String nomeVertice2 = parte.substring(indiceFixo, j);
+                    System.out.println("Vertice2: " + nomeVertice2);
+                    indiceFixo = j + 1;
+
+                    while (parte.charAt(i) != '=') {
+                        i++;
+                        j++;
+                    }
+
+                    String atributo = parte.substring(indiceFixo, j);
+                    System.out.println("Atributo: " + atributo);
+
+                    j++;
+
+                    String valorAtributo = parte.substring(j, parte.length());
+                    System.out.println("Valor: " + valorAtributo);
+
+                    //Verifica se o grafo já existe
+                    for (i = 0; i < GrafoPersist.grafo.size(); i++) {
+                        //existe o grafo
+                        if (GrafoPersist.grafo.get(i).getNome().equals(nomeGrafo)) {
+                            indiceGrafo = i;
+                            //verifica se o vertice existe
+                            for (j = 0; j < GrafoPersist.grafo.get(i).aresta.size(); j++) {
+                                if (GrafoPersist.grafo.get(i).aresta.get(j).getVertice1().equals(nomeVertice1)
+                                        && GrafoPersist.grafo.get(i).aresta.get(j).getVertice2().equals(nomeVertice2)
+                                        || GrafoPersist.grafo.get(i).aresta.get(j).getVertice1().equals(nomeVertice2)
+                                        && GrafoPersist.grafo.get(i).aresta.get(j).getVertice2().equals(nomeVertice1)) {
+                                    arestaExiste = true;
+                                    indiceAresta = j;
+                                }
+                            }
+
+                        }
+                    }
+                    if (arestaExiste) {
+                        GrafoPersist.grafo.get(indiceGrafo).aresta.get(indiceAresta).setPeso(valorAtributo);
+                        ok200(out);
+
+                    } else {
+                        badRequest(out);
+                    }
+                }
             }
 
-            //            fileRequested = parse.nextToken().toLowerCase(); /* / */
-//
-//            if (fileRequested.endsWith("/")) {
-//                fileRequested += arq_pagina;  // fileReq: concatena / com a index.html.. Resultado: /index.html
-//            }
-//            File file = new File(raiz, fileRequested);
-//            int fileLength = (int) file.length();
-//
-//            String content = getContentType(fileRequested);
+            fileRequested = caminho.toLowerCase(); /* / */
+
+            if (fileRequested.endsWith("/")) {
+                fileRequested += arq_pagina;  // fileReq: concatena / com a index.html.. Resultado: /index.html
+            }
+            File file = new File(raiz, fileRequested);
+            int fileLength = (int) file.length();
+
+            String content = getContentType(fileRequested);
             if (method.equals("GET")) {
                 if (caminho.contains("/grafo/")) {
                     //Pega o nome do grafo a ser criado
@@ -331,6 +482,9 @@ public class Servidor implements Runnable {
 
                     if (grafoExiste) {
                         getGrafo(out, GrafoPersist.grafo.get(indiceGrafo));
+                        out.println();
+                        out.flush();
+                        dOut.flush();
                     } else {
                         badRequest(out);
                         out.println();
@@ -338,27 +492,28 @@ public class Servidor implements Runnable {
                         dOut.flush();
 
                     }
-                }
+                } else {
+//                if (caminho.equals('/')) {
+                    FileInputStream fileIn = null;
+                    byte[] fileData = new byte[fileLength];
 
-//                FileInputStream fileIn = null;
-//                byte[] fileData = new byte[fileLength];
-//
-//                try {
-//                    fileIn = new FileInputStream(file);
-//                    fileIn.read(fileData);
-//                } finally {
-//                    close(fileIn);
-//                }
-//                /* Cabecalho */
-//                out.println("HTTP/1.0 200 OK");
-//                out.println("Date: " + new Date());
-//                out.println("Content-type: " + content);
-//                out.println("Content-length: " + file.length());
-//                out.println();
-//                out.flush();
-//
-//                dOut.write(fileData, 0, fileLength);
-//                dOut.flush();
+                    try {
+                        fileIn = new FileInputStream(file);
+                        fileIn.read(fileData);
+                    } finally {
+                        close(fileIn);
+                    }
+                    /* Cabecalho */
+                    out.println("HTTP/1.0 200 OK");
+                    out.println("Date: " + new Date());
+                    out.println("Content-type: " + content);
+                    out.println("Content-length: " + file.length());
+                    out.println();
+                    out.flush();
+
+                    dOut.write(fileData, 0, fileLength);
+                    dOut.flush();
+                }
             }
         } catch (FileNotFoundException fnfe) {
             fileNotFound(out, fileRequested);

@@ -17,7 +17,7 @@ public class GrafoPersist {
     public static ArrayList<Grafo> grafo;
 
     static {
-        grafo = (ArrayList<Grafo>) Persist.recuperar("grafo.dat");
+//        grafo = (ArrayList<Grafo>) Persist.recuperar("grafo.dat");
         if (grafo == null) {
             grafo = new ArrayList<Grafo>();
         }
