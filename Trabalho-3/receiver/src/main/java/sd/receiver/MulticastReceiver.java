@@ -18,18 +18,17 @@ import java.net.SocketTimeoutException;
  */
 public class MulticastReceiver {
 
+    public static boolean multicastEnviado = false;
     public static InetAddress ipOrigem;
-    public static DatagramSocket twosocket = null;
     public static DatagramPacket outPacket = null;
     public static DatagramPacket inPacket = null;
-
+    public static MulticastSocket socket = null;
+    public static byte[] inBuf = new byte[256];
     public static byte[] outBuf;
     public static final int PORT = 8888;
 
     public static void main(String[] args) throws IOException {
 
-        MulticastSocket socket = null;
-        byte[] inBuf = new byte[256];
         try {
             //Prepare to join multicast group
             socket = new MulticastSocket(8888);
@@ -43,16 +42,28 @@ public class MulticastReceiver {
                 socket.receive(inPacket);
                 String msg = new String(inBuf, 0, inPacket.getLength());
                 System.out.println("From " + inPacket.getAddress() + " Msg : " + msg);
-
                 ipOrigem = inPacket.getAddress();
             } catch (SocketTimeoutException e) {
                 System.out.println("Timeout reached!!! " + e);
                 enviaMulticast();
+                multicastEnviado = true;
             }
 
             //}
         } catch (IOException ioe) {
             System.out.println(ioe);
+        }
+
+        if (multicastEnviado) {
+            try {
+                inPacket = new DatagramPacket(inBuf, inBuf.length);
+                socket.receive(inPacket);
+                String msg = new String(inBuf, 0, inPacket.getLength());
+                System.out.println("From " + inPacket.getAddress() + " Msg : " + msg);
+                ipOrigem = inPacket.getAddress();
+            } catch (SocketTimeoutException e) {
+                System.out.println("Timeout reached!!! " + e);
+            }
         }
 
         System.out.println("IP DESCOBERTO: " + ipOrigem);
@@ -76,21 +87,21 @@ public class MulticastReceiver {
             String msg;
 
 //            while (true) {
-                msg = "This is multicast! " + counter;
-                counter++;
-                outBuf = msg.getBytes();
+            msg = "This is multicast! " + counter;
+            counter++;
+            outBuf = msg.getBytes();
 
-                //Send to multicast IP address and port
-                InetAddress address = InetAddress.getByName("224.2.2.3");
-                outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT);
+            //Send to multicast IP address and port
+            InetAddress address = InetAddress.getByName("224.2.2.3");
+            outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT);
 
-                socket.send(outPacket);
+            socket.send(outPacket);
 
-                System.out.println("Server sends : " + msg);
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ie) {
-                }
+            System.out.println("Server sends : " + msg);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ie) {
+            }
 //            }
         } catch (IOException ioe) {
             System.out.println(ioe);
