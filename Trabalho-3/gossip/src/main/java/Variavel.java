@@ -3,16 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.gossip;
 
 /**
  *
  * @author vitor
  */
-public class Media implements Agregavel {
+public class Variavel {
 
-    @Override
-    public double computa(double a, double b) {
-        return ((a + b) / 2);
-    }
+    public String nome;
+    public double valor;
+    public Agregavel funcaoAgregacao;
 }

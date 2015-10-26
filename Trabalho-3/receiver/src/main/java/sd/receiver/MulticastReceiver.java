@@ -16,6 +16,8 @@ import java.net.MulticastSocket;
  */
 public class MulticastReceiver {
 
+    public static InetAddress ipOrigem;
+
     public static void main(String[] args) {
         MulticastSocket socket = null;
         DatagramPacket inPacket = null;
@@ -26,14 +28,18 @@ public class MulticastReceiver {
             InetAddress address = InetAddress.getByName("224.2.2.3");
             socket.joinGroup(address);
 
-            while (true) {
-                inPacket = new DatagramPacket(inBuf, inBuf.length);
-                socket.receive(inPacket);
-                String msg = new String(inBuf, 0, inPacket.getLength());
-                System.out.println("From " + inPacket.getAddress() + " Msg : " + msg);
-            }
+            //while (true) {
+            inPacket = new DatagramPacket(inBuf, inBuf.length);
+            socket.receive(inPacket);
+            String msg = new String(inBuf, 0, inPacket.getLength());
+            System.out.println("From " + inPacket.getAddress() + " Msg : " + msg);
+
+            ipOrigem = inPacket.getAddress();
+            //}
         } catch (IOException ioe) {
             System.out.println(ioe);
         }
+        
+        System.out.println("IP DESCOBERTO: "+ ipOrigem);
     }
 }
