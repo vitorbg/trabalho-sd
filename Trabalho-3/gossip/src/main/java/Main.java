@@ -8,10 +8,15 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 
 /**
  *
@@ -28,14 +33,15 @@ public class Main {
     public static byte[] inBuf = new byte[256];
     public static byte[] outBuf;
     public static final int PORT = 8888;
+    public static String ipInstancia;
     //--
     public static int id;
     public static int qtdIteracoes = 0;
     public static ArrayList<Variavel> valores = new ArrayList<>();
-    public static Thread multicastReceiver = new Thread(new TMulticastReceiver());
-    public static Thread multicastSender = new Thread(new TMulticastSender());
+    public static Thread multicastThreadReceiver = new Thread(new TMulticastReceiver());
+    public static Thread multicastThreadSender = new Thread(new TMulticastSender());
 
-    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnknownHostException, SocketException {
         id = Integer.valueOf(args[0]);
         qtdIteracoes = Integer.valueOf(args[1]);
 
@@ -63,21 +69,41 @@ public class Main {
         System.out.println(valores.get(0).nome);
         System.out.println(valores.get(0).valor);
 
+        ipInstancia = prop_rede();
+        System.out.println("ipInstancia" + ipInstancia);
+
+        multicastThreadReceiver.start();
+        multicastThreadSender.start();
+        while (!instanciaDescoberta) {
+            System.out.println("Tentando descobrir instancias...");
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ie) {
+            }
+        }
+
+        System.out.println("Instancia descoberta em: ");
+
     }
 
     public static void recebeMulticast() {
         try {
             //Prepare to join multicast group
-            Main.multicastSocket = new MulticastSocket(8888);
+            multicastSocket = new MulticastSocket(8888);
             InetAddress address = InetAddress.getByName("224.2.2.3");
-            Main.multicastSocket.joinGroup(address);
-//            Main.multicastSocket.setSoTimeout(10000);
+            multicastSocket.joinGroup(address);
+            multicastSocket.setSoTimeout(10000);
             try {
-                Main.inPacket = new DatagramPacket(Main.inBuf, Main.inBuf.length);
-                Main.multicastSocket.receive(Main.inPacket);
+                inPacket = new DatagramPacket(Main.inBuf, Main.inBuf.length);
+                multicastSocket.receive(Main.inPacket);
                 String msg = new String(Main.inBuf, 0, Main.inPacket.getLength());
-                System.out.println("From " + Main.inPacket.getAddress() + " Msg : " + msg);
-                Main.ipOrigem = Main.inPacket.getAddress();
+                ipOrigem = Main.inPacket.getAddress();
+                if (ipInstancia.equals(msg)) {
+                    System.out.println("Pacote da própria instancia descartado.");
+                } else {
+                    System.out.println("From: " + Main.inPacket.getAddress() + " Msg: " + msg);
+                    instanciaDescoberta = true;
+                }
             } catch (SocketTimeoutException e) {
                 System.out.println("Timeout reached!!! " + e);
             }
@@ -94,7 +120,7 @@ public class Main {
         try {
             socket = new DatagramSocket();
             String msg;
-            msg = getEnderecoComputador();
+            msg = ipInstancia;
             outBuf = msg.getBytes();
 
             //Send to multicast IP address and port
@@ -111,17 +137,32 @@ public class Main {
         }
     }
 
-    public static String getEnderecoComputador() {
-
-        InetAddress addr = null;
-
+    public static String prop_rede() throws UnknownHostException, SocketException {
+        System.out.println("Obtendo Informacões da Rede desta Instancia");
+        String IP = null;
         try {
-            addr = InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            System.out.println(ex.getMessage());
-        }
+            Enumeration ifaces = NetworkInterface.getNetworkInterfaces();
 
-        return addr.getHostAddress();
+            while (ifaces.hasMoreElements()) {
+                NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
+
+                System.out.println("Obtendo Informacões da interface: " + iface.getName());
+                for (InterfaceAddress address : iface.getInterfaceAddresses()) {
+                    System.out.println("IP........: " + address.getAddress().toString());
+                    if (iface.getName().equals("wlan0")) {
+                        IP = address.getAddress().toString();
+                    }
+                    Object bc = address.getBroadcast();
+                    System.out.println("Broadcast.: " + bc);
+                    System.out.println("Máscara...: " + address.getNetworkPrefixLength());
+
+                }
+
+            }
+
+        } catch (SocketException ifaces) {
+        }
+        return IP;
     }
 
 }
