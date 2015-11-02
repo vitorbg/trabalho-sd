@@ -12,12 +12,12 @@ public class TMulticastSender implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-
+        while (!Main.instanciaDescoberta) {
+            Main.enviaMulticast();
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException interrupted) {
-//                    System.out.println(interrupted.printStackTrace());
+                System.out.println(interrupted);
             }
 
         }
