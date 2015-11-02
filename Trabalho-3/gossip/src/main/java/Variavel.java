@@ -12,5 +12,6 @@ public class Variavel {
 
     public String nome;
     public double valor;
-    public Agregavel funcaoAgregacao;
+    public String funcaAgregacao;
+//    public Agregavel funcaoAgregacao;
 }

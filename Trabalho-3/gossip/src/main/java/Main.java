@@ -42,33 +42,26 @@ public class Main {
         int k = 0; //Guarda o indice do array para a funcao de agregacao respectiva
         int j = 0; //Guarda o indice do array para receber o nome e valor
         int i = 2; //Indice no agrs
+
         while (i < args.length) {
+            Variavel var = new Variavel();
 
-            if (args[i].endsWith(".class")) {
-//                Class<?> forName = Class.forName(args[i]);
-//                System.out.println(" "+forName);
-//                valores.get(k).funcaoAgregacao = (Agregavel) forName.newInstance();
-//                System.out.println(" " + args[i].toString());
-            } else {
-                Variavel var = new Variavel();
+            var.nome = args[i];
+            i++;
 
-                var.valor = Double.valueOf(args[i]);
-                i++;
-                var.nome = args[i];
-                i++;
-                j++;
-                valores.add(var);
-            }
+            var.valor = Double.valueOf(args[i]);
+            i++;
 
-            System.out.println("ID: " + id);
-            System.out.println("ITERACOES: " + qtdIteracoes);
-            System.out.println(valores.get(0).nome);
-            System.out.println(valores.get(0).valor);
-            System.out.println(valores.get(0).funcaoAgregacao);
-            
-            
+            var.funcaAgregacao = args[i];
+            i++;
 
+            valores.add(var);
         }
+
+        System.out.println("ID: " + id);
+        System.out.println("ITERACOES: " + qtdIteracoes);
+        System.out.println(valores.get(0).nome);
+        System.out.println(valores.get(0).valor);
 
     }
 
