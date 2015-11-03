@@ -25,6 +25,7 @@ public class Main {
 
     public static boolean instanciaDescoberta = false;
     public static boolean multicastRecebido = false;
+    public static boolean fimPrograma = false;
     public static InetAddress ipOrigem;
     public static DatagramPacket outPacket = null;
     public static DatagramPacket inPacket = null;
@@ -83,15 +84,14 @@ public class Main {
 
         System.out.println("Instancia descoberta em: " + ipInstanciaDescoberta);
         System.out.println("Enviando msg");
-        String msg = null;
+        String msg = "";
         for (i = 0; i < valores.size(); i++) {
-            msg.concat(msg + valores.get(i).nome);
-            msg.concat(msg + valores.get(i).valor);
-
+            msg = msg + (valores.get(i).nome);
+            msg = " " + msg + String.valueOf(valores.get(i).valor);
         }
         System.out.println(msg);
-
         enviaMSG(msg);
+        fimPrograma = true;
 
     }
 
@@ -102,6 +102,7 @@ public class Main {
         DatagramPacket pkg = new DatagramPacket(msg, msg.length);
         ds.receive(pkg);
         String modifiedSentence = new String(pkg.getData());
+        System.out.println("veio UDP: "+modifiedSentence);
 
     }
 
