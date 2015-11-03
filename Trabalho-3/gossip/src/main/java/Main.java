@@ -33,6 +33,7 @@ public class Main {
     public static byte[] inBuf = new byte[256];
     public static byte[] outBuf;
     public static final int PORT = 8888;
+    public static final int PORT_TWO = 8889;
     public static String ipInstancia;
     public static String ipInstanciaDescoberta;
     //--
@@ -41,6 +42,7 @@ public class Main {
     public static ArrayList<Variavel> valores = new ArrayList<>();
     public static Thread multicastThreadReceiver = new Thread(new TMulticastReceiver());
     public static Thread multicastThreadSender = new Thread(new TMulticastSender());
+    public static Thread udpReceiver = new Thread(new TUDPReceiver());
 
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnknownHostException, SocketException {
         id = Integer.valueOf(args[0]);
@@ -74,6 +76,7 @@ public class Main {
 
         multicastThreadReceiver.start();
         multicastThreadSender.start();
+        udpReceiver.start();
         while (!instanciaDescoberta) {
             System.out.println("Tentando descobrir instancias...");
             try {
@@ -97,12 +100,12 @@ public class Main {
 
     public static void recebeMSG() throws SocketException, IOException {
 
-        DatagramSocket ds = new DatagramSocket(PORT);
+        DatagramSocket ds = new DatagramSocket(PORT_TWO);
         byte[] msg = new byte[256];
         DatagramPacket pkg = new DatagramPacket(msg, msg.length);
         ds.receive(pkg);
         String modifiedSentence = new String(pkg.getData());
-        System.out.println("veio UDP: "+modifiedSentence);
+        System.out.println("veio UDP: " + modifiedSentence);
 
     }
 
@@ -116,7 +119,7 @@ public class Main {
 
             //Send to multicast IP address and port
             InetAddress address = InetAddress.getByName(ipInstanciaDescoberta);
-            outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT);
+            outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT_TWO);
             socket.send(outPacket);
             System.out.println("MSG ENVIADA: " + msg);
             try {
