@@ -122,8 +122,8 @@ public class Main {
         clientSentence = inFromClient.readLine();
 
         System.out.println("------------------------");
-        System.out.println("PDV: " + clientSentence);
-        System.out.println("IP: " + welcomeSocket.getInetAddress());
+        System.out.println("" + clientSentence);
+        System.out.println("" + welcomeSocket.getInetAddress());
         capitalizedSentence = "MSG DO SERVIDOR" + "\n";
         //Responde ao cliente
         outToClient.writeBytes(capitalizedSentence);
@@ -135,8 +135,8 @@ public class Main {
 
         String sentence;
         String modifiedSentence;
-
-        Socket clientSocket = new Socket("127.0.0.1", 8889);
+        String ipTratado = ipInstanciaDescoberta.substring(1);
+        Socket clientSocket = new Socket(ipTratado, 8889);
 
         DataOutputStream outToServer
                 = new DataOutputStream(clientSocket.getOutputStream());
