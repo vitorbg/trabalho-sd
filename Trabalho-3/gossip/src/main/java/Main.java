@@ -4,13 +4,19 @@
  * and open the template in the editor.
  */
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.MulticastSocket;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -44,7 +50,7 @@ public class Main {
     public static Thread multicastThreadSender = new Thread(new TMulticastSender());
     public static Thread udpReceiver = new Thread(new TUDPReceiver());
 
-    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnknownHostException, SocketException {
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnknownHostException, SocketException, IOException {
         id = Integer.valueOf(args[0]);
         qtdIteracoes = Integer.valueOf(args[1]);
 
@@ -100,35 +106,51 @@ public class Main {
 
     public static void recebeMSG() throws SocketException, IOException {
 
-        DatagramSocket ds = new DatagramSocket(PORT_TWO);
-        byte[] msg = new byte[256];
-        DatagramPacket pkg = new DatagramPacket(msg, msg.length);
-        ds.receive(pkg);
-        String modifiedSentence = new String(pkg.getData());
-        System.out.println("veio UDP: " + modifiedSentence);
+        String clientSentence;
+        String capitalizedSentence = null;
+        ServerSocket welcomeSocket = new ServerSocket(8889);
 
+        Socket connectionSocket = welcomeSocket.accept();
+
+        BufferedReader inFromClient
+                = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+
+        DataOutputStream outToClient
+                = new DataOutputStream(connectionSocket.getOutputStream());
+
+        //Leitura da String que virá do Cliente
+        clientSentence = inFromClient.readLine();
+
+        System.out.println("------------------------");
+        System.out.println("PDV: " + clientSentence);
+        System.out.println("IP: " + welcomeSocket.getInetAddress());
+        capitalizedSentence = "MSG DO SERVIDOR" + "\n";
+        //Responde ao cliente
+        outToClient.writeBytes(capitalizedSentence);
     }
 
-    public static void enviaMSG(String msg) throws SocketException {
-        DatagramSocket socket = null;
-        DatagramPacket outPacket = null;
-        byte[] outBuf;
-        try {
-            socket = new DatagramSocket();
-            outBuf = msg.getBytes();
+    public static void enviaMSG(String msg) throws SocketException, IOException {
+        //Declaro a Stream de saida de dados  
+        PrintStream ps = null;
 
-            //Send to multicast IP address and port
-            InetAddress address = InetAddress.getByName(ipInstanciaDescoberta);
-            outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT_TWO);
-            socket.send(outPacket);
-            System.out.println("MSG ENVIADA: " + msg);
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException ie) {
-            }
-        } catch (IOException ioe) {
-            System.out.println(ioe);
-        }
+        String sentence;
+        String modifiedSentence;
+
+        Socket clientSocket = new Socket("127.0.0.1", 8889);
+
+        DataOutputStream outToServer
+                = new DataOutputStream(clientSocket.getOutputStream());
+
+        BufferedReader inFromServer
+                = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+        outToServer.writeBytes("true" + "\n");
+
+        modifiedSentence = inFromServer.readLine();
+
+        System.out.println("FROM SERVER: " + modifiedSentence);
+
+        clientSocket.close();
 
     }
 
