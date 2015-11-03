@@ -1,0 +1,26 @@
+nome,idade,estado,paisigla,sexo
+
+Inserindo joao, 30
+joao, 30 <
+
+Inserindo joao, mg -> key joao ja existe, entao concatena key+value anterior.
+joao@30,mg <
+
+Inserindo joao,br -> key joao ja existe, entao concatena key+value anterior.
+joao@30@mg,br
+
+Inserindo joao,M -> key joao ja existe, entao concatena key+value anterior.
+joao@30@mg@br,M <
+
+
+entao afterall teremos:
+
+joao,30
+joao@30,mg
+joao@30@mg,br
+joao@30@mg@br,M
+
+
+
+localhost 80 "delete teste"
+localhost 80 "insert teste,whatever"

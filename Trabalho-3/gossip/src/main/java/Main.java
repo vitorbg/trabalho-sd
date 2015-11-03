@@ -108,25 +108,26 @@ public class Main {
 
         String clientSentence;
         String capitalizedSentence = null;
+
         ServerSocket welcomeSocket = new ServerSocket(8889);
-
         Socket connectionSocket = welcomeSocket.accept();
+        while (true) {
+            BufferedReader inFromClient
+                    = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-        BufferedReader inFromClient
-                = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+            DataOutputStream outToClient
+                    = new DataOutputStream(connectionSocket.getOutputStream());
 
-        DataOutputStream outToClient
-                = new DataOutputStream(connectionSocket.getOutputStream());
+            //Leitura da String que virá do Cliente
+            clientSentence = inFromClient.readLine();
 
-        //Leitura da String que virá do Cliente
-        clientSentence = inFromClient.readLine();
-
-        System.out.println("------------------------");
-        System.out.println("" + clientSentence);
-        System.out.println("" + welcomeSocket.getInetAddress());
-        capitalizedSentence = "MSG DO SERVIDOR" + "\n";
-        //Responde ao cliente
-        outToClient.writeBytes(capitalizedSentence);
+            System.out.println("------------------------");
+            System.out.println("" + clientSentence);
+            System.out.println("" + welcomeSocket.getInetAddress());
+            capitalizedSentence = "MSG DO SERVIDOR" + "\n";
+            //Responde ao cliente
+            outToClient.writeBytes(capitalizedSentence);
+        }
     }
 
     public static void enviaMSG(String msg) throws SocketException, IOException {
