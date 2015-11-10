@@ -70,9 +70,20 @@ public class Main {
             i++;
 
             var.funcaAgregacao = args[i];
+            if (args[i] == "Max") {
+                var.funcaoAgregavel = new Max();
+            }
+            if (args[i] == "Min") {
+                var.funcaoAgregavel = new Min();
+            }
+            if (args[i] == "Media") {
+                var.funcaoAgregavel = new Media();
+            }
+
             i++;
 
             valores.add(var);
+
         }
 
         System.out.println("ID: " + id);
@@ -98,7 +109,9 @@ public class Main {
         String msg = "";
         for (i = 0; i < valores.size(); i++) {
             msg = msg + (valores.get(i).nome);
-            msg = "|" + msg + String.valueOf(valores.get(i).valor) + "|";
+            msg = msg + "|";
+            msg = msg + String.valueOf(valores.get(i).valor);
+            msg = msg + "|";
         }
         System.out.println(msg);
 
@@ -128,16 +141,25 @@ public class Main {
             clientSentence = inFromClient.readLine();
 
             System.out.println("Chegou da instancia " + ipInstanciaDescoberta + " = " + clientSentence);
-            
-            StringTokenizer parse = new StringTokenizer(clientSentence);
-            String method = parse.nextToken();
-            String method2 = parse.nextToken();
-            String method3 = parse.nextToken();
 
-            System.out.println("Chegou "+method);
-            System.out.println("Chegou "+method2);
-            System.out.println("Chegou "+method3);
-            
+            StringTokenizer parse = new StringTokenizer(clientSentence, "|");
+            while (parse.hasMoreElements()) {
+                String var = (String) parse.nextElement();
+                String valor = (String) parse.nextElement();
+
+                for (int i = 0; i < valores.size(); i++) {
+                    if (var.equals(valores.get(i).nome)) {
+                        valores.get(i).valor
+                                = valores.get(i).funcaoAgregavel.computa(
+                                        valores.get(i).valor, Double.valueOf(valor));
+                        System.out.println("Variavel Local " + valores.get(i).nome);
+                        System.out.println("Novo Valor " + valores.get(i).valor);
+                    }
+
+                }
+
+            }
+
             capitalizedSentence = "MSG DO SERVIDOR" + "\n";
             //Responde ao cliente
             outToClient.writeBytes(capitalizedSentence);
