@@ -146,9 +146,10 @@ public class Main {
             while (parse.hasMoreElements()) {
                 String var = (String) parse.nextElement();
                 String valor = (String) parse.nextElement();
-
+                System.out.println("Variavel" + var);
+                System.out.println("Valor" + valor);
                 for (int i = 0; i < valores.size(); i++) {
-                    if (var.equals(valores.get(i).nome)) {
+                    if (var == (valores.get(i).nome)) {
                         valores.get(i).valor
                                 = valores.get(i).funcaoAgregavel.computa(
                                         valores.get(i).valor, Double.valueOf(valor));
@@ -159,8 +160,14 @@ public class Main {
                 }
 
             }
-
-            capitalizedSentence = "MSG DO SERVIDOR" + "\n";
+            String msg = "";
+            for (int i = 0; i < valores.size(); i++) {
+                msg = msg + (valores.get(i).nome);
+                msg = msg + "|";
+                msg = msg + String.valueOf(valores.get(i).valor);
+                msg = msg + "|";
+            }
+            capitalizedSentence = msg + "\n";
             //Responde ao cliente
             outToClient.writeBytes(capitalizedSentence);
         }
