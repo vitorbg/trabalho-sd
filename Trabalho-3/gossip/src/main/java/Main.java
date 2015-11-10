@@ -22,6 +22,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -46,6 +47,7 @@ public class Main {
     public static int id;
     public static int qtdIteracoes = 0;
     public static ArrayList<Variavel> valores = new ArrayList<>();
+    public static ArrayList<Variavel> valoresInstanciaDescoberta = new ArrayList<>();
     public static Thread multicastThreadReceiver = new Thread(new TMulticastReceiver());
     public static Thread multicastThreadSender = new Thread(new TMulticastSender());
     public static Thread udpReceiver = new Thread(new TUDPReceiver());
@@ -96,10 +98,14 @@ public class Main {
         String msg = "";
         for (i = 0; i < valores.size(); i++) {
             msg = msg + (valores.get(i).nome);
-            msg = " " + msg + String.valueOf(valores.get(i).valor);
+            msg = "|" + msg + String.valueOf(valores.get(i).valor) + "|";
         }
         System.out.println(msg);
-        enviaMSG(msg);
+
+        for (i = 0; i < qtdIteracoes; i++) {
+            enviaMSG(msg);
+        }
+
         fimPrograma = true;
 
     }
@@ -121,9 +127,17 @@ public class Main {
             //Leitura da String que virá do Cliente
             clientSentence = inFromClient.readLine();
 
-            System.out.println("------------------------");
-            System.out.println("" + clientSentence);
-            System.out.println("" + welcomeSocket.getInetAddress());
+            System.out.println("Chegou da instancia " + ipInstanciaDescoberta + " = " + clientSentence);
+            
+            StringTokenizer parse = new StringTokenizer(clientSentence);
+            String method = parse.nextToken();
+            String method2 = parse.nextToken();
+            String method3 = parse.nextToken();
+
+            System.out.println("Chegou "+method);
+            System.out.println("Chegou "+method2);
+            System.out.println("Chegou "+method3);
+            
             capitalizedSentence = "MSG DO SERVIDOR" + "\n";
             //Responde ao cliente
             outToClient.writeBytes(capitalizedSentence);
@@ -145,7 +159,7 @@ public class Main {
         BufferedReader inFromServer
                 = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-        outToServer.writeBytes("true" + "\n");
+        outToServer.writeBytes(msg + "\n");
 
         modifiedSentence = inFromServer.readLine();
 
@@ -220,7 +234,7 @@ public class Main {
                 System.out.println("Obtendo Informacões da interface: " + iface.getName());
                 for (InterfaceAddress address : iface.getInterfaceAddresses()) {
                     System.out.println("IP........: " + address.getAddress().toString());
-                    if (iface.getName().equals("wlan0")) {
+                    if (iface.getName().equals("wlan0") || iface.getName().equals("eth0")) {
                         IP = address.getAddress().toString();
                     }
                     Object bc = address.getBroadcast();
