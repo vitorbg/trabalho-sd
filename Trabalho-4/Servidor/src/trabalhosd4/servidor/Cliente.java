@@ -11,23 +11,38 @@ package trabalhosd4.servidor;
  */
 public class Cliente {
 
-    private String id;
-    private String saldo;
+    private int id;
+    private double saldo;
+    private String endereco;
 
-    public String getId() {
+    public Cliente(int id, double saldo, String endereco) {
+        this.id = id;
+        this.saldo = saldo;
+        this.endereco = endereco;
+    }
+
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getSaldo() {
+    public double getSaldo() {
         return saldo;
     }
 
-    public void setSaldo(String saldo) {
+    public void setSaldo(double saldo) {
         this.saldo = saldo;
+    }
+
+    public String getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(String endereco) {
+        this.endereco = endereco;
     }
 
 }
