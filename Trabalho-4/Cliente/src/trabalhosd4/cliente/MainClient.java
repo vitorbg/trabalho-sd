@@ -25,6 +25,7 @@ public class MainClient {
     public static Thread threadRecebeMultiCast = new Thread(new ThreadRecebeMultiCast());
     public static boolean fimPrograma = false;
     public static boolean fimVotacao = false;
+    public static boolean estaComRegiaoCritica = false;
     public static int id;
 
     /**
@@ -70,6 +71,10 @@ public class MainClient {
                     valor = scannerDois.nextDouble();
                     MainClient.fimVotacao = false;
                     enviarMensagem("2|" + id + "|" + String.valueOf(valor));
+                    if (recebeMensagem() == "1") {
+                        System.out.println("Estou com a região crítica. ");
+                        MainClient.estaComRegiaoCritica = true;
+                    }
 
                     break;
                 }

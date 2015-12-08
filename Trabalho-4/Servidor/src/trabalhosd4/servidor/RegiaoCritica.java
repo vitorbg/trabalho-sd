@@ -17,7 +17,7 @@ public class RegiaoCritica {
     public static int ID = 0;
 
     public static ArrayList<Cliente> clientes = new ArrayList<Cliente>();
-    public static List<Integer> filaDeAcesso = new ArrayList<>();
+    public static List<Acesso> filaDeAcesso = new ArrayList<Acesso>();
 
     public static void adicionarSaldo(int ID, double valor) {
         for (int i = 0; i < clientes.size(); i++) {

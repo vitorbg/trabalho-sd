@@ -90,26 +90,25 @@ public class MainServer implements Runnable {
             //Envia multicast solicitando acesso a região crítica
             if (input.charAt(0) == '2') {
                 String sID = input.substring(2, 3);
-                String sValor = input.substring(5);
-                System.out.println("VALOR DE A = " + sID);
-                System.out.println("VALOR DE B = " + sValor);
+                String sValor = input.substring(5, input.length());
 
                 int id = Integer.valueOf(sID);
                 double valor = Double.valueOf(sValor);
 
-                System.out.println("VALOR DE id = " + id);
-                System.out.println("VALOR DE saldo = " + valor);
-
-                enviaMulticast(sID);
+                enviaMulticast(sID + "|erc");
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException ie) {
                 }
 
                 if (RegiaoCritica.ID == 0) {
+//                if (Votacao.retornaVencedor() == id) {
                     System.out.println("*****************");
                     System.out.println("PEGA A REGIAO CRITICA ID: " + id);
                     System.out.println("*****************");
+                    out.println("1");
+                    out.flush();
+                    out.close();
 
                     RegiaoCritica.ID = id;
                     Votacao.reiniciarVotacao();
@@ -118,17 +117,27 @@ public class MainServer implements Runnable {
                         Thread.sleep(10000);
                     } catch (InterruptedException ie) {
                     }
+
+                    enviaMulticast(id + "|src");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ie) {
+                    }
+                    if (Votacao.retornaVencedor() == id) {
+
+                    }
                     System.out.println("*****************");
                     System.out.println("SAI DA REGIAO CRITICA ID: " + id);
-
                     System.out.println("*****************");
+
                     RegiaoCritica.ID = 0;
 
                 } else {
                     System.out.println("---------------------------------------");
                     System.out.println("Regiao Critica em Uso." + "Quem tentou acessa-la: " + id);
                     System.out.println("---------------------------------------");
-                    RegiaoCritica.filaDeAcesso.add(id);
+
+//                    RegiaoCritica.filaDeAcesso.add(id);
                     while (RegiaoCritica.ID != 0) {
                         try {
                             Thread.sleep(10000);

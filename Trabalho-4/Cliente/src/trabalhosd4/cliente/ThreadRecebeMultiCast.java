@@ -40,9 +40,27 @@ public class ThreadRecebeMultiCast implements Runnable {
                     inPacket = new DatagramPacket(inBuf, inBuf.length);
                     multicastSocket.receive(inPacket);
                     String msg = new String(inBuf, 0, inPacket.getLength());
-                    System.out.println("Endereco: " + inPacket.getAddress() + " requisita a regiao critica. ID: " + msg);
-                    enviaMulticast("s|" + MainClient.id);
-                    MainClient.fimVotacao = true;
+                    if (msg.contains("erc")) {
+                        System.out.println("****************");
+                        System.out.println("Endereco: " + inPacket.getAddress() + " requisita entrar na regiao critica. ID: " + msg);
+                        System.out.println("****************");
+                        enviaMulticast("s|" + MainClient.id);
+                    }
+                    if (msg.contains("src")) {
+                        if (MainClient.estaComRegiaoCritica) {
+                            System.out.println("****************");
+                            System.out.println("Endereco: " + inPacket.getAddress() + " requisita sair da regiao critica. ID: " + msg);
+                            System.out.println("****************");
+                            MainClient.estaComRegiaoCritica = false;
+                            enviaMulticast("n|" + MainClient.id);
+                        } else {
+                            System.out.println("****************");
+                            System.out.println("Endereco: " + inPacket.getAddress() + " requisita sair da regiao critica. ID: " + msg);
+                            System.out.println("****************");
+                            enviaMulticast("s|" + MainClient.id);
+                        }
+                    }
+//                    MainClient.fimVotacao = true;
 
                 } catch (SocketTimeoutException e) {
                     System.out.println("Timeout reached!!! " + e);
@@ -67,7 +85,9 @@ public class ThreadRecebeMultiCast implements Runnable {
             InetAddress address = InetAddress.getByName("224.2.2.3");
             outPacket = new DatagramPacket(outBuf, outBuf.length, address, PORT);
             socket.send(outPacket);
+            System.out.println("------------------------------");
             System.out.println("Pedido de acesso à região crítica: " + msg);
+            System.out.println("------------------------------");
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException ie) {
