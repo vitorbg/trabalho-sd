@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -35,33 +36,38 @@ public class ThreadRecebeMultiCast implements Runnable {
             multicastSocket.joinGroup(address);
 //            multicastSocket.setSoTimeout(10000);
 
-            while (!MainClient.fimVotacao) {
+            while (!MainClient.fimPrograma) {
                 try {
                     inPacket = new DatagramPacket(inBuf, inBuf.length);
                     multicastSocket.receive(inPacket);
                     String msg = new String(inBuf, 0, inPacket.getLength());
                     if (msg.contains("erc")) {
-                        System.out.println("****************");
-                        System.out.println("Endereco: " + inPacket.getAddress() + " requisita entrar na regiao critica. ID: " + msg);
-                        System.out.println("****************");
-                        enviaMulticast("s|" + MainClient.id);
-                    }
-                    if (msg.contains("src")) {
-                        if (MainClient.estaComRegiaoCritica) {
-                            System.out.println("****************");
-                            System.out.println("Endereco: " + inPacket.getAddress() + " requisita sair da regiao critica. ID: " + msg);
-                            System.out.println("****************");
-                            MainClient.estaComRegiaoCritica = false;
-                            enviaMulticast("n|" + MainClient.id);
-                        } else {
-                            System.out.println("****************");
-                            System.out.println("Endereco: " + inPacket.getAddress() + " requisita sair da regiao critica. ID: " + msg);
-                            System.out.println("****************");
-                            enviaMulticast("s|" + MainClient.id);
+                        System.out.println(msg);
+                        StringTokenizer parse = new StringTokenizer(msg, "|");
+                        String operacao = parse.nextToken();
+                        String id = parse.nextToken();
+                        String endereco = parse.nextToken();
+                        String porta = parse.nextToken();
+                        System.out.println("-+----------------------");
+                        System.out.println(operacao);
+                        System.out.println(id);
+                        System.out.println(endereco);
+                        System.out.println(porta);
+                        System.out.println(Integer.valueOf(porta));
+                        System.out.println("-+----------------------");
+
+                        if (Integer.valueOf(id) == MainClient.id) {
+                        }else{
+                            if (MainClient.estaComRegiaoCritica) {
+                                MainClient.enviarMensagem("n|" + MainClient.id, endereco, Integer.valueOf(porta));
+                            } else {
+                                MainClient.enviarMensagem("s|" + MainClient.id, endereco, Integer.valueOf(porta));
+                            }
                         }
                     }
-//                    MainClient.fimVotacao = true;
+                    if (msg.contains("s")) {
 
+                    }
                 } catch (SocketTimeoutException e) {
                     System.out.println("Timeout reached!!! " + e);
                 }

@@ -147,6 +147,8 @@ public class MainServer implements Runnable {
                         System.out.println("ESPERANDO !!!! ID: " + id);
                         System.out.println("---------------------------------------");
                     }
+                    enviaMulticast(id + "|erc");
+
                     System.out.println("*****************");
                     System.out.println("PEGA A REGIAO CRITICA ID: " + id);
                     System.out.println("*****************");
@@ -157,6 +159,14 @@ public class MainServer implements Runnable {
                     try {
                         Thread.sleep(10000);
                     } catch (InterruptedException ie) {
+                    }
+                    enviaMulticast(id + "|src");
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException ie) {
+                    }
+                    if (Votacao.retornaVencedor() == id) {
+
                     }
                     System.out.println("*****************");
                     System.out.println("SAI DA REGIAO CRITICA ID: " + id);
