@@ -48,21 +48,25 @@ public class ThreadRecebeMultiCast implements Runnable {
                         String id = parse.nextToken();
                         String endereco = parse.nextToken();
                         String porta = parse.nextToken();
-                        System.out.println("-+----------------------");
-                        System.out.println(operacao);
-                        System.out.println(id);
-                        System.out.println(endereco);
-                        System.out.println(porta);
-                        System.out.println(Integer.valueOf(porta));
+                        String contador = parse.nextToken();
+                        System.out.println("-+Multicast----------------------");
+                        System.out.println("Operacao: " + operacao + "            ID: " + id);
+                        System.out.println("Endereco: " + endereco + "            Porta: " + porta);
+                        System.out.println("Valor de seu relogio logico: " + contador);
                         System.out.println("-+----------------------");
 
+                        MainClient.processos.get(Integer.valueOf(id) - 1).contador++;
+
                         if (Integer.valueOf(id) == MainClient.id) {
-                        }else{
-                            if (MainClient.estaComRegiaoCritica) {
-                                MainClient.enviarMensagem("n|" + MainClient.id, endereco, Integer.valueOf(porta));
-                            } else {
-                                MainClient.enviarMensagem("s|" + MainClient.id, endereco, Integer.valueOf(porta));
-                            }
+                        } else if (MainClient.estaComRegiaoCritica) {
+                            MainClient.enviarMensagem("n|" + MainClient.id, endereco, Integer.valueOf(porta));
+                            FilaRegiaoCritica e = new FilaRegiaoCritica();
+                            e.id = Integer.valueOf(id);
+                            e.endereco = endereco;
+                            e.port = Integer.valueOf(porta);
+                            MainClient.filaRegiaoCritica.add(e);
+                        } else {
+                            MainClient.enviarMensagem("s|" + MainClient.id, endereco, Integer.valueOf(porta));
                         }
                     }
                     if (msg.contains("s")) {

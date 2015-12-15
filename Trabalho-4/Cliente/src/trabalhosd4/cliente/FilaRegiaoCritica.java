@@ -5,15 +5,14 @@
  */
 package trabalhosd4.cliente;
 
-import java.util.Date;
-
 /**
  *
  * @author vitor
  */
-public class Processo {
+public class FilaRegiaoCritica {
 
     public int id;
-    public int contador = 0;
-    public Date dataEntrada;
+    public String endereco;
+    public int port;
+
 }

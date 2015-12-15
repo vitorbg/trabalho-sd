@@ -17,7 +17,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -28,6 +30,7 @@ import java.util.StringTokenizer;
 public class MainClient {
 
     public static ArrayList<Processo> processos = new ArrayList<>();
+    public static ArrayList<FilaRegiaoCritica> filaRegiaoCritica = new ArrayList<>();
     private static final int PORTA = 1024;
     private static final int PORTA_TCP = 9010;
     private static final String SERVIDOR = "127.0.0.1";
@@ -35,13 +38,13 @@ public class MainClient {
     public static boolean fimPrograma = false;
     public static boolean estaComRegiaoCritica = false;
     public static int id;
-    public static final int QUANTIDADE_PROCESSOS = 2;
+    public static final int QUANTIDADE_PROCESSOS = 3;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException {
-
+        povoarRelogio();
         threadRecebeMultiCast.start();
 
         int op = 0;
@@ -77,16 +80,15 @@ public class MainClient {
                     System.out.println("Confirmar para entrar na Região Crítica ");
                     System.out.println("Operacao: ");
                     opDois = scannerDois.nextInt();
-                    enviaMulticast("erc|" + String.valueOf(id) + "|" + SERVIDOR + "|" + String.valueOf(porta_socket));
+                    enviaMulticast("erc|" + String.valueOf(id) + "|" + SERVIDOR + "|" + String.valueOf(porta_socket) + "|" + processos.get(id - 1).contador);
 
-                    Socket server = serverConnect.accept();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(server.getInputStream()));
-                    String t;
                     String idOutro = null;
                     int contador = 0;
                     boolean regiaoCriticaEmUso = false;
                     while (contador < QUANTIDADE_PROCESSOS - 1) {
-
+                        Socket server = serverConnect.accept();
+                        BufferedReader br = new BufferedReader(new InputStreamReader(server.getInputStream()));
+                        String t;
 //                        while ((t = br.readLine()) != null) {
                         t = br.readLine();
                         System.out.println("Permissao: " + t);
@@ -103,31 +105,89 @@ public class MainClient {
                         }
                         contador++;
                         System.out.println(contador);
+
                         br.close();
+                        server.close();
 //                        }
 
                     }
 
-                    if (regiaoCriticaEmUso) {
-                        if (processos.isEmpty()) {
-                            Processo proc = new Processo();
-                            proc.id = Integer.valueOf(idOutro);
-                            proc.dataEntrada = new Date();
-                            MainClient.processos.add(proc);
-                        }
-                        System.out.println("Região Crítica em uso =/ ");
-                    } else {
+                    Collections.sort(processos, new Comparator<Processo>() {
+                        @Override
+                        public int compare(Processo p1, Processo p2) {
 
-//                        if(regi)
+                            if (p1.contador < p2.contador) {
+                                return -1;
+                            }
+                            if (p1.contador == p2.contador) {
+                                return 0;
+                            } else {
+                                return 1;
+                            }
+
+                        }
+                    });
+                    boolean usarRegiaoCritica = false;
+
+                    if (regiaoCriticaEmUso) {
+
+                        while (!usarRegiaoCritica) {
+
+                            System.out.println("Região Crítica em uso =/ ");
+                            Socket server = serverConnect.accept();
+                            BufferedReader br = new BufferedReader(new InputStreamReader(server.getInputStream()));
+                            String t;
+                            t = br.readLine();
+
+                            br.close();
+                            server.close();
+                            System.out.println("Chegou: " + t);
+                            StringTokenizer parse = new StringTokenizer(t, "|");
+                            String operacao = parse.nextToken();
+                            String permissao = parse.nextToken();
+                            String idOutroDois = parse.nextToken();
+                            if (permissao.equals("s")) {
+                                System.out.println("Está na região Crítica " + MainClient.id);
+                                MainClient.estaComRegiaoCritica = true;
+                                usarRegiaoCritica = true;
+                                try {
+                                    Thread.sleep(30000);
+                                } catch (InterruptedException ie) {
+                                }
+                                System.out.println("Saiu da região Crítica " + MainClient.id);
+                                MainClient.estaComRegiaoCritica = false;
+                                for (int k = 0; k < filaRegiaoCritica.size(); k++) {
+                                    if (k == 0) {
+                                        enviarMensagem("src|s|" + MainClient.id, filaRegiaoCritica.get(k).endereco, filaRegiaoCritica.get(k).port);
+
+                                    } else {
+                                        enviarMensagem("src|n|" + MainClient.id, filaRegiaoCritica.get(k).endereco, filaRegiaoCritica.get(k).port);
+                                    }
+                                }
+                                filaRegiaoCritica.clear();
+
+                            }
+
+                        }
+                    } else {
                         MainClient.estaComRegiaoCritica = true;
                         System.out.println("Está na região Crítica " + MainClient.id);
                         try {
-                            Thread.sleep(20000);
+                            Thread.sleep(30000);
                         } catch (InterruptedException ie) {
                         }
                         System.out.println("Saiu da região Crítica " + MainClient.id);
                         MainClient.estaComRegiaoCritica = false;
 
+                        for (int k = 0; k < filaRegiaoCritica.size(); k++) {
+                            if (k == 0) {
+                                enviarMensagem("src|s|" + MainClient.id, filaRegiaoCritica.get(k).endereco, filaRegiaoCritica.get(k).port);
+                            } else {
+                                enviarMensagem("src|n|" + MainClient.id, filaRegiaoCritica.get(k).endereco, filaRegiaoCritica.get(k).port);
+                            }
+
+                        }
+                        filaRegiaoCritica.clear();
                     }
 
                     break;
@@ -214,17 +274,17 @@ public class MainClient {
 
     }
 
-//    public static String recebeMensagem() throws IOException {
-//        BufferedReader br = new BufferedReader(new InputStreamReader(server.getInputStream()));
-//        String t;
-//        while ((t = br.readLine()) != null) {
-//            System.out.println(t);
-//        }
-//        br.close();
-//        return t;
-//    }
-//
-//    public static void fechaSocket() throws IOException {
-//        server.close();
-//    }
+    public static void povoarRelogio() {
+
+        for (int i = 0; i < QUANTIDADE_PROCESSOS; i++) {
+            Processo p = new Processo();
+            p.id = i + 1;
+            p.contador = 0;
+            processos.add(p);
+        }
+        for (int j = 0; j < QUANTIDADE_PROCESSOS; j++) {
+            System.out.println(processos.get(j).id);
+            System.out.println(processos.get(j).contador);
+        }
+    }
 }
