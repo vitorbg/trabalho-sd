@@ -15,41 +15,49 @@
 #define MAX_STRING 100
 
 int main(int argc, char** argv) {
+	
+	//  char greeting[MAX_STRING];
+	// Initialize the MPI environment
+	MPI_Init(NULL, NULL);
+	// Find out rank, size
+	int world_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+	int world_size;
+	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-//  char greeting[MAX_STRING];
-  // Initialize the MPI environment
-  MPI_Init(NULL, NULL);
-  // Find out rank, size
-  int world_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+	int quantidadePontos  = 20;
+	int buffer;
 
-  int quantidadePontos  = 200;
-
-  // We are assuming at least 2 processes for this task
-  if (world_size < 2) {
-    fprintf(stderr, "World size must be greater than 1 for %s\n", argv[0]);
-    MPI_Abort(MPI_COMM_WORLD, 1); 
-  }
-
-  if(world_rank == 0){
-  		int i;
-	  	for(i = 1; i < world_size; i++){
-		  	MPI_Send(&quantidadePontos, quantidadePontos, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	// We are assuming at least 2 processes for this task
+  	if (world_size < 2) {
+    		fprintf(stderr, "World size must be greater than 1 for %s\n", argv[0]);
+    		MPI_Abort(MPI_COMM_WORLD, 1); 
   	}
-  }
+
+
+	MPI_Bcast(&quantidadePontos, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	//if(world_rank == 0) {
+		//MPI_Bcast(&quantidadePontos, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  		//int i;
+		//printf("Entrei no processo zero ! \n");	
+	  	//for(i = 1; i < world_size; i++) {
+			//printf("Enviando ! \n");	
+		  	//MPI_Send(&quantidadePontos, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+  		//}
+  	//}
 
 
 
-  //int number;
-  if (world_rank != 0) {
-    // If we are rank 0, set the number to -1 and send it to process 1
-    //sprintf(greeting, "Greetings from process %d of %d!", world_rank, world_size);
-    //MPI_Send(&greeting, strlen(greeting) + 1, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-    MPI_Recv(&quantidadePontos, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    printf("RECEBI: %d\n", quantidadePontos);
-  } //else {
+	//int number;
+  	if (world_rank != 0) {
+    	// If we are rank 0, set the number to -1 and send it to process 1
+    	//sprintf(greeting, "Greetings from process %d of %d!", world_rank, world_size);
+    	//MPI_Send(&greeting, strlen(greeting) + 1, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
+			
+		printf("Antes de receber %d! \n", world_rank);	
+    		MPI_Recv(&buffer, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		printf("RECEBI: %d \n",buffer);
+  	} //else {
   	//	int i;
 	  //	for(i = 1; i < world_size; i++){
 		//  	MPI_Recv(&greeting, MAX_STRING, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -57,5 +65,5 @@ int main(int argc, char** argv) {
   	//}
   
  // }
-  MPI_Finalize();
+  	MPI_Finalize();
 }
